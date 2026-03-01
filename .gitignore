@@ -1,0 +1,7 @@
+# Generated run artifacts
+runs/*/work/
+runs/*/output/
+runs/*/input/
+
+# macOS / editor
+.DS_Store
