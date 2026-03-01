@@ -21,38 +21,62 @@ branch="$(git branch --show-current || echo unknown)"
 
 if ! git remote get-url origin >/dev/null 2>&1; then
   {
-    echo "- 状态：未执行远端同步。"
+    echo "- 状态：失败。"
     echo "- 原因：当前仓库未配置 origin 远端。"
   } >> "$SYNC_REPORT"
-else
-  {
-    echo "- 远端：$(git remote get-url origin)"
-    echo "- 操作：git fetch origin"
-  } >> "$SYNC_REPORT"
-  git fetch origin >> "$SYNC_REPORT" 2>&1 || true
+  echo "Sync & execute failed: missing origin"
+  exit 2
+fi
 
+{
+  echo "- 远端：$(git remote get-url origin)"
+  echo "- 操作：git fetch origin"
+} >> "$SYNC_REPORT"
+
+if ! git fetch origin >> "$SYNC_REPORT" 2>&1; then
   {
-    echo "- 操作：git pull --rebase origin ${branch}"
+    echo
+    echo "## 执行结果"
+    echo
+    echo "- 未执行主题替换：远端同步失败，无法保证拿到 GitHub 最新文件。"
+    echo "- 请先解决网络/代理后重试。"
   } >> "$SYNC_REPORT"
-  git pull --rebase origin "${branch}" >> "$SYNC_REPORT" 2>&1 || true
+  echo "Sync & execute failed: fetch error"
+  exit 2
+fi
+
+{
+  echo "- 操作：git pull --rebase origin ${branch}"
+} >> "$SYNC_REPORT"
+
+if ! git pull --rebase origin "${branch}" >> "$SYNC_REPORT" 2>&1; then
+  {
+    echo
+    echo "## 执行结果"
+    echo
+    echo "- 未执行主题替换：pull 失败，无法保证本地为远端最新。"
+  } >> "$SYNC_REPORT"
+  echo "Sync & execute failed: pull error"
+  exit 2
 fi
 
 {
   echo
-  echo "## 输入文件扫描"
+  echo "## 输入文件扫描（仅 runs/*/input）"
   echo
 } >> "$SYNC_REPORT"
-find . -type f \( -iname '*.pptx' -o -iname '*.pptm' -o -iname '*.thmx' \) ! -path './runs/*' | sort > "${REPORT_DIR}/detected-input-files.txt"
+
+find runs -type f \( -iname '*.pptx' -o -iname '*.pptm' -o -iname '*.thmx' \) -path '*/input/*' | sort > "${REPORT_DIR}/detected-input-files.txt"
 count=$(wc -l < "${REPORT_DIR}/detected-input-files.txt" | tr -d ' ')
 {
   echo "- 检测到文件数：${count}"
   if [[ "$count" -gt 0 ]]; then
     echo "- 明细见：\`runs/${RUN_ID}/work/detected-input-files.txt\`"
   else
-    echo "- 未检测到输入PPT/THMX文件。"
+    echo "- 未检测到输入文件。"
   fi
 } >> "$SYNC_REPORT"
 
-bash scripts/execute_uploaded_trial.sh "$RUN_ID" >> "$SYNC_REPORT" 2>&1 || true
+bash scripts/execute_uploaded_trial.sh "$RUN_ID" >> "$SYNC_REPORT" 2>&1
 
 echo "Sync & execute report: $SYNC_REPORT"

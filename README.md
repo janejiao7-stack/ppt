@@ -65,7 +65,7 @@ bash scripts/execute_theme_swap_trial.sh \
 
 ## 自动扫描并执行（无需手填路径）
 
-如果你已把两个文件放在仓库目录（任意子目录），可直接运行：
+如果你已把两个文件放在 `runs/<run-id>/input/`（推荐）后，可直接运行：
 
 ```bash
 bash scripts/execute_uploaded_trial.sh run-001
@@ -101,3 +101,14 @@ git fetch origin --prune
 ## 说明
 
 本仓库当前提供的是**可复用流程与执行骨架**。如需实际产出目标PPT，请先将源PPT和模板文件加入对应 run 的 `input/` 目录，再按清单执行。
+
+
+## 同步并执行（严格模式）
+
+该命令会先 `fetch + pull`，只有在同步成功后才执行；若网络失败会直接退出，不会误用本地测试文件：
+
+```bash
+bash scripts/sync_and_execute_uploaded_trial.sh run-sync-001
+```
+
+输入文件仅从 `runs/*/input/` 读取。
