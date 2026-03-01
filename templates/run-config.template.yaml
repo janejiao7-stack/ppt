@@ -1,0 +1,26 @@
+run_id: example-client-20260301
+
+input:
+  source_file: source.pptx
+  theme_file: theme.thmx # or theme.pptx
+
+constraints:
+  keep_content_unchanged: true
+  allow_layout_micro_adjustment: true
+  keep_transitions: true
+  keep_animations: true
+  keep_embedded_videos: true
+  keep_smartart_editable: true
+
+fonts:
+  chinese_target: "请填写中文目标字体"
+  english_target: "请填写英文字体"
+
+risk_pages:
+  smartart_pages: []
+  video_pages: []
+  complex_animation_pages: []
+
+delivery:
+  output_filename: Final_换模版_YYYYMMDD.pptx
+  backup_filename: Final_换模版_备份_YYYYMMDD.pptx
